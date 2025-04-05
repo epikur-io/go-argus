@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	goargus "github.com/epikur-io/go-argus"
+	argus "github.com/epikur-io/go-argus"
 	fileloader "github.com/epikur-io/go-argus/pkg/loader/fileloader"
 	filewatcher "github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
 )
@@ -17,9 +17,9 @@ type Config struct {
 
 func main() {
 	configFile := "./example/testfile.yaml"
-	config, err := goargus.NewArgus[Config](
-		goargus.WithLoader(fileloader.New(configFile)),
-		goargus.WithWatcher(filewatcher.New(configFile)),
+	config, err := argus.NewArgus[Config](
+		argus.WithLoader(fileloader.New(configFile)),
+		argus.WithWatcher(filewatcher.New(configFile)),
 	)
 	if err != nil {
 		panic(err)

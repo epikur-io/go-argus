@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	goargus "github.com/epikur-io/go-argus"
+	argus "github.com/epikur-io/go-argus"
 	fileloader "github.com/epikur-io/go-argus/pkg/loader/fileloader"
 	filewatcher "github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
 )
@@ -21,12 +21,12 @@ type Config struct {
 func main() {
 	configFile := "./example/testfile.yaml"
 	logger := zerolog.New(os.Stdin)
-	config, err := goargus.NewArgus[Config](
-		goargus.WithLoader(fileloader.New(configFile)),
-		goargus.WithWatcher(filewatcher.New(configFile)),
-		goargus.WithYamlDecoder(),
-		goargus.WithLogger(logger),
-		goargus.WithCallback(func(logger *zerolog.Logger) {
+	config, err := argus.NewArgus[Config](
+		argus.WithLoader(fileloader.New(configFile)),
+		argus.WithWatcher(filewatcher.New(configFile)),
+		argus.WithYamlDecoder(),
+		argus.WithLogger(logger),
+		argus.WithCallback(func(logger *zerolog.Logger) {
 			logger.Info().Msg("Successfully reloaded config!")
 		}),
 	)
