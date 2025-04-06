@@ -9,8 +9,9 @@ import (
 	"github.com/rs/zerolog"
 
 	argus "github.com/epikur-io/go-argus"
-	filereader "github.com/epikur-io/go-argus/pkg/reader/filereader"
-	filewatcher "github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
+
+	"github.com/epikur-io/go-argus/pkg/reader/filereader"
+	"github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
 )
 
 type Config struct {
