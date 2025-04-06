@@ -67,8 +67,7 @@ func (d *iniDecoderWrapper) Decode(val any) error {
 	if err != nil {
 		return err
 	}
-	iniFile.MapTo(val)
-	return nil
+	return iniFile.MapTo(val)
 }
 
 func WithIniDecoder() option {
@@ -157,6 +156,7 @@ func NewArgus[T any](opts ...option) (*Argus[T], error) {
 
 func (m *Argus[T]) InjectIntoContext(ctx context.Context, key string) context.Context {
 	val := m.GetValue()
+	// nolint:staticcheck
 	return context.WithValue(ctx, key, val)
 }
 
