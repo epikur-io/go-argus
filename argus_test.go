@@ -3,8 +3,11 @@ package goargus
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/epikur-io/go-argus/pkg/reader/filereader"
+	"github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
+	"github.com/rs/zerolog"
 	assert "github.com/stretchr/testify/assert"
 )
 
@@ -71,7 +74,7 @@ func TestDecoders(t *testing.T) {
 func TestInvalidJsonFormat(t *testing.T) {
 	_ = os.Chdir("./test-data")
 	opts := []option{
-		WithReader(filereader.New("sample_invalid.josn")),
+		WithReader(filereader.New("sample_invalid.json")),
 		WithJsonDecoder(),
 	}
 	argus, err := NewArgus[testSample](opts...)
@@ -81,4 +84,30 @@ func TestInvalidJsonFormat(t *testing.T) {
 
 func TestFileWatcher(t *testing.T) {
 	// !TODO
+	_ = os.Chdir("./test-data")
+	testFile := "sample_watcher01.yaml"
+	contents := `x: 1`
+	fh, err := os.Create(testFile)
+	assert.Empty(t, err)
+	fh.WriteString(contents)
+	assert.Empty(t, fh.Close())
+	defer os.Remove(testFile)
+	stop := make(chan struct{})
+	opts := []option{
+		WithReader(filereader.New(testFile)),
+		WithWatcher(filewatcher.New(testFile)),
+		WithYamlDecoder(),
+		WithCallback(func(l *zerolog.Logger) {
+			close(stop)
+		}),
+	}
+	argus, err := NewArgus[testSample](opts...)
+	assert.NotEmpty(t, argus)
+	assert.Empty(t, err)
+	assert.Empty(t, argus.StartWatcher())
+	go func() {
+		time.Sleep(time.Second / 2)
+		assert.Empty(t, os.WriteFile(testFile, []byte(`x: 2`), os.ModePerm))
+	}()
+	<-stop
 }
