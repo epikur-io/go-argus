@@ -16,12 +16,12 @@ import (
 )
 
 type config struct {
-	logger    zerolog.Logger
-	hasLogger bool
-	watcher   types.Watcher
-	loader    types.Loader
-	callback  func(l *zerolog.Logger)
-	decoder   func(r io.Reader) types.Decoder
+	logger        zerolog.Logger
+	hasLogger     bool
+	watcher       types.Watcher
+	readerFactory types.ReaderFactory
+	callback      func(l *zerolog.Logger)
+	decoder       func(r io.Reader) types.Decoder
 }
 
 type option func(*config)
@@ -84,9 +84,9 @@ func WithCustomDecoder(decoderFactory func(io.Reader) types.Decoder) option {
 }
 
 // Use custom file decoder, see the Decoder interface
-func WithLoader(loader types.Loader) option {
+func WithLoader(loader types.ReaderFactory) option {
 	return func(c *config) {
-		c.loader = loader
+		c.readerFactory = loader
 	}
 }
 
@@ -120,7 +120,7 @@ func NewArgus[T any](opts ...option) (*Argus[T], error) {
 	if m.config.decoder == nil {
 		WithYamlDecoder()(&m.config)
 	}
-	if m.config.loader == nil {
+	if m.config.readerFactory == nil {
 		return nil, fmt.Errorf("missing loader")
 	}
 
@@ -144,10 +144,11 @@ func (m *Argus[T]) LoadValue() error {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
-	reader, err := m.config.loader.Load()
+	reader, err := m.config.readerFactory.NewReader()
 	if err != nil {
 		return err
 	}
+	defer reader.Close()
 
 	var newValue T
 	decoder := m.config.decoder(reader)

@@ -1,4 +1,4 @@
-package fileloader
+package filereader
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ type Loader struct {
 	lastModTime time.Time
 }
 
-func (l *Loader) Load() (io.ReadCloser, error) {
+func (l *Loader) NewReader() (io.ReadCloser, error) {
 	// !TODO
 	var err error
 	l.fh, err = os.Open(l.file)

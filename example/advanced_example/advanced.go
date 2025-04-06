@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 
 	argus "github.com/epikur-io/go-argus"
-	fileloader "github.com/epikur-io/go-argus/pkg/loader/fileloader"
+	filereader "github.com/epikur-io/go-argus/pkg/reader/filereader"
 	filewatcher "github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	configFile := "./example/testfile.yaml"
 	logger := zerolog.New(os.Stdin)
 	config, err := argus.NewArgus[Config](
-		argus.WithLoader(fileloader.New(configFile)),
+		argus.WithLoader(filereader.New(configFile)),
 		argus.WithWatcher(filewatcher.New(configFile)),
 		argus.WithYamlDecoder(),
 		argus.WithLogger(logger),
