@@ -106,14 +106,12 @@ func WithCustomDecoder(decoderFactory func(io.Reader) types.Decoder) option {
 	}
 }
 
-// Use custom file decoder, see the Decoder interface
 func WithReader(loader types.ReaderFactory) option {
 	return func(c *config) {
 		c.readerFactory = loader
 	}
 }
 
-// Use custom file decoder, see the Decoder interface
 func WithWatcher(watcher types.Watcher) option {
 	return func(c *config) {
 		c.watcher = watcher
