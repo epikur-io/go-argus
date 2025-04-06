@@ -12,6 +12,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog"
+	"gopkg.in/ini.v1"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -53,6 +54,29 @@ func WithYamlDecoder() option {
 	return func(c *config) {
 		c.decoder = func(r io.Reader) types.Decoder {
 			return yaml.NewDecoder(r)
+		}
+	}
+}
+
+type iniDecoderWrapper struct {
+	reader io.Reader
+}
+
+func (d *iniDecoderWrapper) Decode(val any) error {
+	iniFile, err := ini.Load(d.reader)
+	if err != nil {
+		return err
+	}
+	iniFile.MapTo(val)
+	return nil
+}
+
+func WithIniDecoder() option {
+	return func(c *config) {
+		c.decoder = func(r io.Reader) types.Decoder {
+			return &iniDecoderWrapper{
+				reader: r,
+			}
 		}
 	}
 }
