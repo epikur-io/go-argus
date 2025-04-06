@@ -1,13 +1,13 @@
 package goargus
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/epikur-io/go-argus/pkg/reader/filereader"
 	"github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
-	"github.com/rs/zerolog"
 	assert "github.com/stretchr/testify/assert"
 )
 
@@ -83,31 +83,38 @@ func TestInvalidJsonFormat(t *testing.T) {
 }
 
 func TestFileWatcher(t *testing.T) {
-	// !TODO
 	_ = os.Chdir("./test-data")
 	testFile := "sample_watcher01.yaml"
-	contents := `x: 1`
+	contents := `key: "1"`
 	fh, err := os.Create(testFile)
 	assert.Empty(t, err)
-	fh.WriteString(contents)
+	_, err = fh.WriteString(contents)
+	assert.Empty(t, err)
 	assert.Empty(t, fh.Close())
 	defer os.Remove(testFile)
-	stop := make(chan struct{})
-	opts := []option{
+	stop := make(chan struct{}, 1)
+	defer close(stop)
+	argus, err := NewArgus[testSample](
 		WithReader(filereader.New(testFile)),
 		WithWatcher(filewatcher.New(testFile)),
 		WithYamlDecoder(),
-		WithCallback(func(l *zerolog.Logger) {
-			close(stop)
-		}),
-	}
-	argus, err := NewArgus[testSample](opts...)
+	)
 	assert.NotEmpty(t, argus)
 	assert.Empty(t, err)
+	initialVal := argus.GetValue()
 	assert.Empty(t, argus.StartWatcher())
+	defer assert.Empty(t, argus.StartWatcher())
 	go func() {
-		time.Sleep(time.Second / 2)
-		assert.Empty(t, os.WriteFile(testFile, []byte(`x: 2`), os.ModePerm))
+		for range 2 {
+			time.Sleep(250 * time.Millisecond)
+			assert.Empty(t, os.WriteFile(testFile, []byte(`key: "2"`), os.ModePerm))
+		}
+		stop <- struct{}{}
 	}()
 	<-stop
+	val := argus.GetValue()
+	fmt.Println(val)
+	assert.NotEqual(t, initialVal, val, "expected different value")
+	expected := testSample{Key: "2"}
+	assert.Equal(t, expected, val)
 }
