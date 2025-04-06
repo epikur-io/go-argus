@@ -49,8 +49,8 @@ func TestDecoders(t *testing.T) {
 			file:    "sample.ini",
 		},
 	}
-	_ = os.Chdir("./test-data")
 
+	_ = os.Chdir("./test-data")
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			opts := []option{
@@ -66,6 +66,17 @@ func TestDecoders(t *testing.T) {
 		})
 	}
 
+}
+
+func TestInvalidJsonFormat(t *testing.T) {
+	_ = os.Chdir("./test-data")
+	opts := []option{
+		WithReader(filereader.New("sample_invalid.josn")),
+		WithJsonDecoder(),
+	}
+	argus, err := NewArgus[testSample](opts...)
+	assert.Empty(t, argus)
+	assert.NotEmpty(t, err)
 }
 
 func TestFileWatcher(t *testing.T) {

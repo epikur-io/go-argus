@@ -4,4 +4,5 @@
     "nested": {
         "key": "value"
     }
+    -- invalid --
 }
