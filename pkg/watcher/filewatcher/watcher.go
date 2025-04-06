@@ -42,7 +42,9 @@ func (w *Watcher) Start(argus types.IArgus) error {
 	if err != nil {
 		return err
 	}
-	watcher.Add(w.file)
+	if err := watcher.Add(w.file); err != nil {
+		return err
+	}
 	go func() {
 		defer watcher.Close()
 		for {
