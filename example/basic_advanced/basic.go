@@ -8,9 +8,9 @@ import (
 
 	"github.com/rs/zerolog"
 
-	argus "github.com/epikur-io/go-argus"
-	filereader "github.com/epikur-io/go-argus/pkg/reader/filereader"
-	filewatcher "github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
+	goargus "github.com/epikur-io/go-argus"
+	"github.com/epikur-io/go-argus/pkg/reader/filereader"
+	"github.com/epikur-io/go-argus/pkg/watcher/filewatcher"
 )
 
 type Config struct {
@@ -21,12 +21,12 @@ type Config struct {
 func main() {
 	configFile := "./example/testfile.yaml"
 	logger := zerolog.New(os.Stdin)
-	config, err := argus.NewArgus[Config](
-		argus.WithReader(filereader.New(configFile)),
-		argus.WithWatcher(filewatcher.New(configFile)),
-		argus.WithYamlDecoder(),
-		argus.WithLogger(logger),
-		argus.WithCallback(func(logger *zerolog.Logger) {
+	config, err := goargus.NewArgus[Config](
+		goargus.WithReader(filereader.New(configFile)),
+		goargus.WithWatcher(filewatcher.New(configFile)),
+		goargus.WithYamlDecoder(),
+		goargus.WithLogger(logger),
+		goargus.WithCallback(func(logger *zerolog.Logger) {
 			logger.Info().Msg("Successfully reloaded config!")
 		}),
 	)
@@ -39,6 +39,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// go func() {
+	// 	// !DEBUG
+	// 	time.Sleep(5 * time.Second)
+	// 	config.StopWatcher()
+	// }()
 	defer config.StopWatcher()
 
 	// In your application code, you can safely access the config:

@@ -84,7 +84,7 @@ func WithCustomDecoder(decoderFactory func(io.Reader) types.Decoder) option {
 }
 
 // Use custom file decoder, see the Decoder interface
-func WithLoader(loader types.ReaderFactory) option {
+func WithReader(loader types.ReaderFactory) option {
 	return func(c *config) {
 		c.readerFactory = loader
 	}
