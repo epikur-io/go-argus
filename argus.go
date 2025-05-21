@@ -152,7 +152,7 @@ func NewArgus[T any](opts ...option) (*Argus[T], error) {
 	return m, nil
 }
 
-func (m *Argus[T]) InjectIntoContext(ctx context.Context, key string) context.Context {
+func (m *Argus[T]) InjectIntoContext(ctx context.Context, key any) context.Context {
 	val := m.GetValue()
 	// nolint:staticcheck
 	return context.WithValue(ctx, key, val)
