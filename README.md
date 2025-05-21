@@ -27,7 +27,7 @@ func main() {
 	config, err := argus.NewArgus[Config](
 		argus.WithReader(filereader.New(configFile)),
 		argus.WithWatcher(filewatcher.New(configFile)),
-		argus.WithYamlDecoder(), // Use YAML decoder
+		argus.WithYamlDecoder(), // Use YAML decoder (default)
 	)
 	if err != nil {
 		panic(err)
