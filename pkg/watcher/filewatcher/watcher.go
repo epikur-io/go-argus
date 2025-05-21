@@ -16,6 +16,24 @@ func WithLogger(l zerolog.Logger) option {
 	}
 }
 
+func WithOnEvent(fn func(fsnotify.Event)) option {
+	return func(c *Watcher) {
+		c.onEvent = fn
+	}
+}
+
+func WithOnError(fn func(error)) option {
+	return func(c *Watcher) {
+		c.onError = fn
+	}
+}
+
+func WithOnStop(fn func()) option {
+	return func(c *Watcher) {
+		c.onStop = fn
+	}
+}
+
 func New(file string, opts ...option) *Watcher {
 	w := &Watcher{
 		file:        file,
@@ -34,6 +52,9 @@ type Watcher struct {
 	file        string
 	logger      zerolog.Logger
 	hasLogger   bool
+	onEvent     func(fsnotify.Event)
+	onError     func(error)
+	onStop      func()
 	stopWatcher chan struct{}
 }
 
@@ -56,6 +77,9 @@ func (w *Watcher) Start(argus types.IArgus) error {
 				if w.hasLogger {
 					w.logger.Debug().Str("event", event.Name).Str("Op", event.Op.String()).Msg("got event from file watcher")
 				}
+				if w.onEvent != nil {
+					w.onEvent(event)
+				}
 				if event.Has(fsnotify.Write) {
 					if err := argus.LoadValue(); err != nil {
 						if w.hasLogger {
@@ -71,9 +95,15 @@ func (w *Watcher) Start(argus types.IArgus) error {
 				if w.hasLogger {
 					w.logger.Error().Err(err).Msg("HotValue file watcher error")
 				}
+				if w.onError != nil {
+					w.onError(err)
+				}
 			case <-w.stopWatcher:
 				if w.hasLogger {
 					w.logger.Debug().Msg("stopped file watcher")
+				}
+				if w.onStop != nil {
+					w.onStop()
 				}
 				return
 			}

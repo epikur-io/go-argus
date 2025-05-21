@@ -34,7 +34,7 @@ func WithLogger(l zerolog.Logger) option {
 	}
 }
 
-// Callback fn is executed on sucessful reload of the value
+// Callback fn is executed on successful reload of the value
 func WithCallback(fn func(l *zerolog.Logger)) option {
 	return func(c *config) {
 		c.callback = fn
