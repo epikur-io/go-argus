@@ -25,9 +25,9 @@ type Config struct {
 func main() {
 	configFile := "./example/testfile.yaml"
 	config, err := argus.NewArgus[Config](
-		argus.WithReader(filereader.New(configFile)),
-		argus.WithWatcher(filewatcher.New(configFile)),
-		argus.WithYamlDecoder(), // Use YAML decoder (default)
+		argus.WithReader(filereader.New(configFile)), 	// (mandatory) will return error if no reader is provided
+		argus.WithWatcher(filewatcher.New(configFile)), // (optional)
+		argus.WithYamlDecoder(), 						// (optional) Use YAML decoder (default)
 	)
 	if err != nil {
 		panic(err)
