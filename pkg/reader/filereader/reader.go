@@ -26,7 +26,6 @@ type Loader struct {
 }
 
 func (l *Loader) NewReader() (io.ReadCloser, error) {
-	// !TODO
 	var err error
 	l.fh, err = os.Open(l.file)
 	if err != nil {
