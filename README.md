@@ -1,6 +1,6 @@
 # Go-Argus
 
-Handle file changes and reload go values based on the file contents.
+Read data in different formats and from different sources, watch for changes, and bind it to Go structs.
 
 ## Example
 
@@ -47,4 +47,20 @@ func main() {
 		time.Sleep(3 * time.Second)
 	}
 }
+```
+
+## Run tests
+
+Using [taskfile](https://taskfile.dev/) (see `./Taskfile.yaml` for all commands):
+
+```bash
+task test
+
+# for test coverage:
+tesk test:coverage
+```
+Using plain Go:
+
+```bash
+go test -v ./...
 ```
