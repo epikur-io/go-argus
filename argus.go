@@ -16,16 +16,18 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-type config struct {
-	logger        zerolog.Logger
-	hasLogger     bool
-	watcher       types.Watcher
-	readerFactory types.ReaderFactory
-	callback      func(l *zerolog.Logger)
-	decoder       func(r io.Reader) types.Decoder
-}
-
-type option func(*config)
+type (
+	config struct {
+		logger        zerolog.Logger
+		hasLogger     bool
+		watcher       types.Watcher
+		readerFactory types.ReaderFactory
+		callback      func(l *zerolog.Logger)
+		decoder       func(r io.Reader) types.Decoder
+	}
+	option      func(*config)
+	DecoderFunc func(io.Reader) types.Decoder
+)
 
 func WithLogger(l zerolog.Logger) option {
 	return func(c *config) {
@@ -100,7 +102,7 @@ func WithTomlDecoder() option {
 }
 
 // Use custom file decoder, see the Decoder interface
-func WithCustomDecoder(decoderFactory func(io.Reader) types.Decoder) option {
+func WithCustomDecoder(decoderFactory DecoderFunc) option {
 	return func(c *config) {
 		c.decoder = decoderFactory
 	}
