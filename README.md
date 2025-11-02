@@ -1,6 +1,15 @@
 # Go-Argus
 
-Read data in different formats and from different sources, watch for changes, and bind it to Go structs.
+**Go-Argus** is a lightweight and extensible library for **reading, watching, and binding configuration data** from various sources and formats directly into Go structs.
+It supports file-based configurations out of the box, with an easy way to extend to other sources (like environment variables, APIs, etc.).
+
+## Features
+
+- Read configuration from files (JSON, YAML, etc.)
+- Watch for configuration changes and automatically reload
+- Bind configuration data to typed Go structs
+- Pluggable readers, watchers, and decoders
+- Simple and idiomatic API
 
 ## Example
 
@@ -64,3 +73,13 @@ Using plain Go:
 ```bash
 go test -v ./...
 ```
+
+## Extending Go-Argus
+
+You can easily implement your own:
+
+- Reader: for reading config from a new source
+- Watcher: to detect when the source changes
+- Decoder: to handle a new data format
+
+Each is implemented through simple interfaces that integrate seamlessly with argus.NewArgus.
