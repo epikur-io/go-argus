@@ -9,9 +9,12 @@ import (
 
 type option func(*Watcher)
 
-func WithLogger(l zerolog.Logger) option {
+func WithLogger(l *zerolog.Logger) option {
 	return func(c *Watcher) {
-		c.logger = l
+		if l == nil {
+			return
+		}
+		c.logger = *l
 		c.hasLogger = true
 	}
 }
@@ -45,6 +48,9 @@ func New(file string, opts ...option) *Watcher {
 			opt(w)
 		}
 	}
+	if !w.hasLogger {
+		w.logger = zerolog.Nop()
+	}
 	return w
 }
 
@@ -74,17 +80,14 @@ func (w *Watcher) Start(argus types.IArgus) error {
 				if !ok {
 					return
 				}
-				if w.hasLogger {
-					w.logger.Debug().Str("event", event.Name).Str("Op", event.Op.String()).Msg("got event from file watcher")
-				}
+				w.logger.Debug().Str("event", event.Name).Str("Op", event.Op.String()).Msg("got event from file watcher")
+
 				if w.onEvent != nil {
 					w.onEvent(event)
 				}
 				if event.Has(fsnotify.Write) {
 					if err := argus.LoadValue(); err != nil {
-						if w.hasLogger {
-							w.logger.Error().Err(err).Msg("failed to load value")
-						}
+						w.logger.Error().Err(err).Msg("failed to load value")
 						continue
 					}
 				}
@@ -92,16 +95,12 @@ func (w *Watcher) Start(argus types.IArgus) error {
 				if !ok {
 					return
 				}
-				if w.hasLogger {
-					w.logger.Error().Err(err).Msg("HotValue file watcher error")
-				}
+				w.logger.Error().Err(err).Msg("HotValue file watcher error")
 				if w.onError != nil {
 					w.onError(err)
 				}
 			case <-w.stopWatcher:
-				if w.hasLogger {
-					w.logger.Debug().Msg("stopped file watcher")
-				}
+				w.logger.Debug().Msg("stopped file watcher")
 				if w.onStop != nil {
 					w.onStop()
 				}

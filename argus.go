@@ -21,22 +21,25 @@ type (
 		hasLogger     bool
 		watcher       types.Watcher
 		readerFactory types.ReaderFactory
-		callback      func(l *zerolog.Logger, value any)
+		callback      func(l zerolog.Logger, value any)
 		decoder       func(r io.Reader) types.Decoder
 	}
 	option      func(*config)
 	DecoderFunc func(io.Reader) types.Decoder
 )
 
-func WithLogger(l zerolog.Logger) option {
+func WithLogger(l *zerolog.Logger) option {
 	return func(c *config) {
-		c.logger = l
+		if l == nil {
+			return
+		}
+		c.logger = *l
 		c.hasLogger = true
 	}
 }
 
 // Callback fn is executed on successful reload of the value
-func WithCallback(fn func(l *zerolog.Logger, value any)) option {
+func WithCallback(fn func(l zerolog.Logger, value any)) option {
 	return func(c *config) {
 		c.callback = fn
 	}
@@ -124,6 +127,9 @@ func (m *Argus[T]) Init(opts ...option) error {
 			opt(&m.config)
 		}
 	}
+	if !m.config.hasLogger {
+		m.config.logger = zerolog.Nop()
+	}
 	// set yaml default decoder
 	if m.config.decoder == nil {
 		WithYamlDecoder()(&m.config)
@@ -170,11 +176,7 @@ func (m *Argus[T]) LoadValue() error {
 	m.value.Store(newValue)
 
 	if m.config.callback != nil {
-		var logger *zerolog.Logger
-		if m.config.hasLogger {
-			logger = &m.config.logger
-		}
-		m.config.callback(logger, newValue)
+		m.config.callback(m.config.logger, newValue)
 	}
 
 	return nil

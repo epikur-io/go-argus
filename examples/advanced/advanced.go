@@ -20,14 +20,17 @@ type Config struct {
 }
 
 func main() {
-	configFile := "./example/testfile.yaml"
+	configFile := "./examples/testfile.yaml"
 	logger := zerolog.New(os.Stdin)
 	config, err := argus.NewArgus[Config](
 		argus.WithReader(filereader.New(configFile)),
-		argus.WithWatcher(filewatcher.New(configFile)),
+		argus.WithWatcher(filewatcher.New(
+			configFile,
+			filewatcher.WithLogger(&logger),
+		)),
 		argus.WithYamlDecoder(),
-		argus.WithLogger(logger),
-		argus.WithCallback(func(logger *zerolog.Logger, value any) {
+		argus.WithLogger(&logger),
+		argus.WithCallback(func(logger zerolog.Logger, value any) {
 			logger.Info().Msgf("Successfully reloaded config! Value: %s", fmt.Sprint(value))
 		}),
 	)
