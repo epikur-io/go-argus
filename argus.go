@@ -22,7 +22,7 @@ type (
 		hasLogger     bool
 		watcher       types.Watcher
 		readerFactory types.ReaderFactory
-		callback      func(l *zerolog.Logger)
+		callback      func(l *zerolog.Logger, value any)
 		decoder       func(r io.Reader) types.Decoder
 	}
 	option      func(*config)
@@ -37,7 +37,7 @@ func WithLogger(l zerolog.Logger) option {
 }
 
 // Callback fn is executed on successful reload of the value
-func WithCallback(fn func(l *zerolog.Logger)) option {
+func WithCallback(fn func(l *zerolog.Logger, value any)) option {
 	return func(c *config) {
 		c.callback = fn
 	}
@@ -132,7 +132,14 @@ func NewArgus[T any](opts ...option) (*Argus[T], error) {
 	m := &Argus[T]{
 		config: config{},
 	}
+	err := m.Init(opts...)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
 
+func (m *Argus[T]) Init(opts ...option) error {
 	// apply options
 	for _, opt := range opts {
 		if opt != nil {
@@ -144,16 +151,16 @@ func NewArgus[T any](opts ...option) (*Argus[T], error) {
 		WithYamlDecoder()(&m.config)
 	}
 	if m.config.readerFactory == nil {
-		return nil, fmt.Errorf("missing loader")
+		return fmt.Errorf("missing loader")
 	}
 
 	if err := m.LoadValue(); err != nil {
-		return nil, fmt.Errorf("failed to load initial value: %s", err)
+		return fmt.Errorf("failed to load initial value: %s", err)
 	}
-
-	return m, nil
+	return nil
 }
 
+// Injects the current value in the given context.
 func (m *Argus[T]) InjectIntoContext(ctx context.Context, key any) context.Context {
 	val := m.GetValue()
 	// nolint:staticcheck
@@ -164,6 +171,7 @@ func (m *Argus[T]) GetValue() T {
 	return m.value.Load().(T)
 }
 
+// Read from source and load current value
 func (m *Argus[T]) LoadValue() error {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -188,12 +196,13 @@ func (m *Argus[T]) LoadValue() error {
 		if m.config.hasLogger {
 			logger = &m.config.logger
 		}
-		m.config.callback(logger)
+		m.config.callback(logger, newValue)
 	}
 
 	return nil
 }
 
+// Start warching for files
 func (m *Argus[T]) StartWatcher() error {
 	if m.config.watcher == nil {
 		return fmt.Errorf("no watcher attached to argus")

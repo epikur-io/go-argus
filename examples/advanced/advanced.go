@@ -27,8 +27,8 @@ func main() {
 		argus.WithWatcher(filewatcher.New(configFile)),
 		argus.WithYamlDecoder(),
 		argus.WithLogger(logger),
-		argus.WithCallback(func(logger *zerolog.Logger) {
-			logger.Info().Msg("Successfully reloaded config!")
+		argus.WithCallback(func(logger *zerolog.Logger, value any) {
+			logger.Info().Msgf("Successfully reloaded config! Value: %s", fmt.Sprint(value))
 		}),
 	)
 	if err != nil {
