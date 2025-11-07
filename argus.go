@@ -8,11 +8,10 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/BurntSushi/toml"
 	"github.com/epikur-io/go-argus/pkg/types"
 
-	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog"
-	"gopkg.in/ini.v1"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -60,18 +59,6 @@ func WithYamlDecoder() option {
 	}
 }
 
-type iniDecoderWrapper struct {
-	reader io.Reader
-}
-
-func (d *iniDecoderWrapper) Decode(val any) error {
-	iniFile, err := ini.Load(d.reader)
-	if err != nil {
-		return err
-	}
-	return iniFile.MapTo(val)
-}
-
 func WithIniDecoder() option {
 	return func(c *config) {
 		c.decoder = func(r io.Reader) types.Decoder {
@@ -80,15 +67,6 @@ func WithIniDecoder() option {
 			}
 		}
 	}
-}
-
-type tomlDecoderWrapper struct {
-	decoder *toml.Decoder
-}
-
-func (d *tomlDecoderWrapper) Decode(val any) error {
-	_, err := d.decoder.Decode(val)
-	return err
 }
 
 func WithTomlDecoder() option {
